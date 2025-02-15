@@ -3,11 +3,13 @@ use druid::{AppLauncher, Data, Env, Lens, LocalizedString, Widget, WindowDesc, W
 
 const VERTICAL_WIDGET_SPACING: f64 = 20.0;
 const TEXT_BOX_WIDTH: f64 = 200.0;
-const WINDOW_TITLE: LocalizedString<HelloState> = LocalizedString::new("Hello World!");
+const WINDOW_TITLE: LocalizedString<DBConnectionState> = LocalizedString::new("Rust DB client!");
 
 #[derive(Clone, Data, Lens)]
-struct HelloState {
-    name: String,
+struct DBConnectionState {
+    connection_string: String,
+    username: String,
+    password: String,
 }
 
 fn main() {
@@ -17,8 +19,10 @@ fn main() {
         .window_size((400.0, 400.0));
 
     // create the initial app state
-    let initial_state = HelloState {
-        name: "World".into(),
+    let initial_state = DBConnectionState {
+        connection_string: "localhost".into(),
+        username: "".into(),
+        password: "".into(),
     };
 
     // start the application
@@ -27,30 +31,34 @@ fn main() {
         .expect("Failed to launch application");
 }
 
-fn build_root_widget() -> impl Widget<HelloState> {
+fn build_root_widget() -> impl Widget<DBConnectionState> {
     // a label that will determine its text based on the current app data.
-    let label = Label::new(|data: &HelloState, _env: &Env| format!("Hello {}!", data.name));
+    let label = Label::new(|_data: &DBConnectionState, _env: &Env| "Welcome to Rust DB client!");
     // a textbox that modifies `name`.
-    let connectionstring = TextBox::new()
+    let connection_string = TextBox::new()
         .with_placeholder("Connection string")
         .fix_width(TEXT_BOX_WIDTH)
-        .lens(HelloState::name);
+        .lens(DBConnectionState::connection_string);
 
-    let usernamefield = TextBox::new()
+    let username_field = TextBox::new()
         .with_placeholder("Username")
         .fix_width(TEXT_BOX_WIDTH)
-        .lens(HelloState::name);
+        .lens(DBConnectionState::username);
 
-    let passwordfield = TextBox::new()
+    let password_field = TextBox::new()
         .with_placeholder("Password")
         .fix_width(TEXT_BOX_WIDTH)
-        .lens(HelloState::name);
+        .lens(DBConnectionState::password);
 
     // arrange the two widgets vertically, with some padding
     let layout = Flex::column()
         .with_child(label)
         .with_spacer(VERTICAL_WIDGET_SPACING)
-        .with_child(textbox);
+        .with_child(connection_string)
+        .with_spacer(VERTICAL_WIDGET_SPACING)
+        .with_child(username_field)
+        .with_spacer(VERTICAL_WIDGET_SPACING)
+        .with_child(password_field);
 
     // center the two widgets in the available space
     Align::centered(layout)
