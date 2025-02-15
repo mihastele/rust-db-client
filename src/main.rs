@@ -16,13 +16,15 @@ struct DBConnectionState {
 
 struct PasswordController;
 
-impl<W: Widget<String>> Controller<String, W> for PasswordController {
-    fn update(&mut self, child: &mut W, ctx: &mut UpdateCtx, old_data: &String, data: &String, env: &Env) {
-        if old_data != data {
+impl<W: Widget<DBConnectionState>> Controller<DBConnectionState, W> for PasswordController {
+    fn update(&mut self, child: &mut W, ctx: &mut UpdateCtx, old_data: &DBConnectionState, data: &DBConnectionState, env: &Env) {
+        if old_data.password != data.password {
             // Replace the displayed text with asterisks
-            let masked_text = "*".repeat(data.len());
+            let masked_text = "*".repeat(data.password.len());
             ctx.request_paint();
-            child.update(ctx, old_data, &masked_text, env);
+            let mut temp_data = data.clone();
+            temp_data.password = masked_text;
+            child.update(ctx, old_data, &temp_data, env);
         } else {
             child.update(ctx, old_data, data, env);
         }
