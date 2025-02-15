@@ -1,4 +1,4 @@
-use druid::widget::{Align, Flex, Label, TextBox, Controller};
+use druid::widget::{Align, Flex, Label, TextBox, Controller, RadioGroup, Radio, LineBreaking};
 use druid::{AppLauncher, Data, Env, Lens, LocalizedString, Widget, WindowDesc, WidgetExt, UpdateCtx};
 
 
@@ -11,8 +11,28 @@ struct DBConnectionState {
     connection_string: String,
     username: String,
     password: String,
+    db_type: DbType,
 }
 
+// Define the possible database types as an enum
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Data)]
+enum DbType {
+    Postgres,
+    MySql,
+    MSSQL
+}
+
+// impl Data for DbType {
+//     fn same(&self, other: &Self) -> bool {
+//         std::mem::discriminant(self) == std::mem::discriminant(other)
+//     }
+// }
+//
+// impl PartialEq for DbType {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.same(other)
+//     }
+// }
 
 struct PasswordController;
 
@@ -43,6 +63,7 @@ fn main() {
         connection_string: "localhost".into(),
         username: "".into(),
         password: "".into(),
+        db_type: DbType::MySql,
     };
 
     // start the application
@@ -55,6 +76,16 @@ fn build_root_widget() -> impl Widget<DBConnectionState> {
     // a label that will determine its text based on the current app data.
     let label = Label::new(|_data: &DBConnectionState, _env: &Env| "Welcome to Rust DB client!");
     // a textbox that modifies `name`.
+
+    // Create radio buttons for database selection
+    let radio_group = RadioGroup::column(vec![
+        ("MySQL", DbType::MySql),
+        ("Postgres", DbType::Postgres),
+        ("Microsoft SQL", DbType::MSSQL),
+    ]).lens(DBConnectionState::db_type);
+
+
+
     let connection_string = TextBox::new()
         .with_placeholder("Connection string")
         .fix_width(TEXT_BOX_WIDTH)
@@ -74,6 +105,8 @@ fn build_root_widget() -> impl Widget<DBConnectionState> {
     // arrange the two widgets vertically, with some padding
     let layout = Flex::column()
         .with_child(label)
+        .with_spacer(VERTICAL_WIDGET_SPACING)
+        .with_child(radio_group)
         .with_spacer(VERTICAL_WIDGET_SPACING)
         .with_child(connection_string)
         .with_spacer(VERTICAL_WIDGET_SPACING)
