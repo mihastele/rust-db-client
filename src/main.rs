@@ -1,5 +1,6 @@
-use druid::widget::{Align, Flex, Label, TextBox};
-use druid::{AppLauncher, Data, Env, Lens, LocalizedString, Widget, WindowDesc, WidgetExt};
+use druid::widget::{Align, Flex, Label, TextBox, Controller};
+use druid::{AppLauncher, Data, Env, Lens, LocalizedString, Widget, WindowDesc, WidgetExt, UpdateCtx};
+
 
 const VERTICAL_WIDGET_SPACING: f64 = 20.0;
 const TEXT_BOX_WIDTH: f64 = 200.0;
@@ -11,6 +12,23 @@ struct DBConnectionState {
     username: String,
     password: String,
 }
+
+
+struct PasswordController;
+
+impl<W: Widget<String>> Controller<String, W> for PasswordController {
+    fn update(&mut self, child: &mut W, ctx: &mut UpdateCtx, old_data: &String, data: &String, env: &Env) {
+        if old_data != data {
+            // Replace the displayed text with asterisks
+            let masked_text = "*".repeat(data.len());
+            ctx.request_paint();
+            child.update(ctx, old_data, &masked_text, env);
+        } else {
+            child.update(ctx, old_data, data, env);
+        }
+    }
+}
+
 
 fn main() {
     // describe the main window
@@ -48,7 +66,8 @@ fn build_root_widget() -> impl Widget<DBConnectionState> {
     let password_field = TextBox::new()
         .with_placeholder("Password")
         .fix_width(TEXT_BOX_WIDTH)
-        .lens(DBConnectionState::password);
+        .lens(DBConnectionState::password)
+        .controller(PasswordController);
 
     // arrange the two widgets vertically, with some padding
     let layout = Flex::column()
